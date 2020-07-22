@@ -6,7 +6,7 @@
 #include <QDebug>
 
 
-TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *parent)
+TreeModel::TreeModel(const QStringList &headers, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QVector<QVariant> rootData;
@@ -14,7 +14,7 @@ TreeModel::TreeModel(const QStringList &headers, const QString &data, QObject *p
         rootData << header;
 
     rootItem = new TreeItem(rootData);
-    setupModelData(data.split('\n'), rootItem);
+    setupModelData(rootItem);
 }
 
 
@@ -210,7 +210,7 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 
-void TreeModel::setupModelData(const QStringList &lines, TreeItem *parent)
+void TreeModel::setupModelData(TreeItem *parent)
 {
     QVector<TreeItem*> parents;
     QVector<int> indentations;

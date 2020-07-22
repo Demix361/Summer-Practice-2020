@@ -1,7 +1,6 @@
 #include "mainwindow.h"
 #include "treemodel.h"
 
-#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,11 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     // названия столбцов взять из бд
     const QStringList headers({tr("id"), tr("tr_left"), tr("tr_right"), tr("data"), tr("level")});
 
-
-    QFile file(":/default.txt");
-    file.open(QIODevice::ReadOnly);
-    TreeModel *model = new TreeModel(headers, file.readAll());
-    file.close();
+    TreeModel *model = new TreeModel(headers);
 
     view->setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)

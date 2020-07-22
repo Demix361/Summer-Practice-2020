@@ -27,9 +27,7 @@ public:
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-//! [1]
 
-//! [2]
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool setData(const QModelIndex &index, const QVariant &value,
                  int role = Qt::EditRole) override;
@@ -51,6 +49,8 @@ private:
 
     TreeItem *rootItem;
 };
-//! [2]
+
+
+void f(const TreeItem &parent);
 
 #endif // TREEMODEL_H

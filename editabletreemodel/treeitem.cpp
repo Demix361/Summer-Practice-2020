@@ -1,4 +1,6 @@
 #include "treeitem.h"
+#include <QDebug>
+#include <QtSql>
 
 
 TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent)
@@ -12,6 +14,52 @@ TreeItem::~TreeItem()
 {
     qDeleteAll(childItems);
 }
+
+
+
+
+// Обновляет данные в дереве из бд
+void TreeItem::f(TreeItem *parent)
+{
+    int cnt = parent->childCount();
+
+    //qDebug() << parent->data(3).toString();
+    if (parent->data(0).toString() != "id")
+    {
+        QSqlQuery query;
+        int id = parent->data(0).toInt();
+
+        QString sql_str = "select * from tab where id = " + QString::number(id);
+        if (!query.exec(sql_str))
+            qDebug() << "aaaaaaaaaaaaaa";
+        else
+        {
+            query.next();
+
+            int left = query.value(1).toInt();
+            int right = query.value(2).toInt();
+            int level = query.value(4).toInt();
+
+            qDebug() << id << left << right << parent->data(3) << level;
+
+            parent->setData(0, id);
+            parent->setData(1, left);
+            parent->setData(2, right);
+            parent->setData(4, level);
+        }
+
+    }
+
+    if (parent->childCount() > 0)
+        for (int i = 0; i < cnt; i++)
+        {
+            f(parent->child(i));
+        }
+}
+
+
+
+
 
 
 

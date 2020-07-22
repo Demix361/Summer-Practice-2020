@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-    Q_INIT_RESOURCE(editabletreemodel);
+    //Q_INIT_RESOURCE(editabletreemodel);
 
     QSqlDatabase sdb = QSqlDatabase::addDatabase("QSQLITE");
     sdb.setDatabaseName("testdb.db");

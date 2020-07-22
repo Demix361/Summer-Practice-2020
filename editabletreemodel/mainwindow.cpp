@@ -46,7 +46,7 @@ void MainWindow::insertChild()
 
     for (int column = 0; column < model->columnCount(index); ++column) {
         const QModelIndex child = model->index(0, column, index);
-        model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
+        //model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
         if (!model->headerData(column, Qt::Horizontal).isValid())
             model->setHeaderData(column, Qt::Horizontal, QVariant(tr("[No header]")), Qt::EditRole);
     }
@@ -83,7 +83,7 @@ void MainWindow::insertRow()
 
     for (int column = 0; column < model->columnCount(index.parent()); ++column) {
         const QModelIndex child = model->index(index.row() + 1, column, index.parent());
-        model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
+        //model->setData(child, QVariant(tr("[No data]")), Qt::EditRole);
     }
 }
 

@@ -14,8 +14,8 @@ TreeModel::TreeModel(const QVector<QString> &headers, QObject *parent)
         rootData << header;
 
     rootItem = new TreeItem(rootData);
-    //table = "adr_officers";
-    table = "tab";
+    table = "adr_officers";
+    //table = "tab";
     setupModelData(rootItem);
 }
 
@@ -67,8 +67,7 @@ TreeItem *TreeModel::getItem(const QModelIndex &index) const
 }
 
 
-QVariant TreeModel::headerData(int section, Qt::Orientation orientation,
-                               int role) const
+QVariant TreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
         return rootItem->data(section);
@@ -130,33 +129,27 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
         new_right = new_left + 1;
     }
 
-
     beginInsertRows(parent, position, position + rows - 1);
     const bool success = parentItem->insertChildren(position, rows, rootItem->columnCount());
     endInsertRows();
-
 
     parentItem->child(position)->setData(0, QString::number(new_id));
     parentItem->child(position)->setData(1, QString::number(new_left));
     parentItem->child(position)->setData(2, QString::number(new_right));
     parentItem->child(position)->setData(3, QString::number(new_level));
 
-
     QString sql_str = "update " + table + " set tr_right = tr_right + 2 where tr_right >= " + QString::number(new_left);
     if (!query.exec(sql_str))
         qDebug() << "1 ins gg";
-
 
     sql_str = "update " + table + " set tr_left = tr_left + 2 where tr_left >= " + QString::number(new_left);
     if (!query.exec(sql_str))
         qDebug() << "2 ins gg";
 
-
     sql_str = "insert into " + table + " (id, tr_left, tr_right, level) "
               "values(" + QString::number(new_id) + ", " + QString::number(new_left) + ", " + QString::number(new_right) + ", " + QString::number(new_level) +  ")";
     if (!query.exec(sql_str))
         qDebug() << "3 ins gg";
-
 
     rootItem->f(rootItem);
 
@@ -191,13 +184,12 @@ bool TreeModel::removeColumns(int position, int columns, const QModelIndex &pare
     return success;
 }
 
-// ыыыыыыыыыы
+
 bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
 {
     TreeItem *parentItem = getItem(parent);
     if (!parentItem)
         return false;
-
 
     int lft = parentItem->child(position)->data(1).toInt();
     int rgt = parentItem->child(position)->data(2).toInt();
@@ -215,8 +207,6 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     sql_str = "update " + table + " set tr_left = tr_left - " + QString::number(width) + " where tr_left > " + QString::number(rgt);
     if (!query.exec(sql_str))
         qDebug() << "3 del gg";
-
-
 
     beginRemoveRows(parent, position, position + rows - 1);
     const bool success = parentItem->removeChildren(position, rows);
@@ -246,7 +236,6 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
 
     if (result)
         emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
-
 
     QSqlQuery query;
 
@@ -284,7 +273,6 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 
-//ok
 void TreeModel::setupModelData(TreeItem *parent)
 {
     QVector<TreeItem*> parents;
@@ -304,7 +292,6 @@ void TreeModel::setupModelData(TreeItem *parent)
         for (int i = 0; i < cols; i++){
             columnData << query.value(i).toString();
         }
-
 
         if (position > indentations.last()) {
             if (parents.last()->childCount() > 0) {

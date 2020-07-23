@@ -3,17 +3,17 @@
 
 #include <QtSql>
 
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
 
-
     QSqlDatabase sdb = QSqlDatabase::addDatabase("QSQLITE");
-    sdb.setDatabaseName("testdb.db");
-    //sdb.setDatabaseName("tree_adress.db");
-    QString table = "tab";
-    //QString table = "adr_officers";
+    //sdb.setDatabaseName("testdb.db");
+    sdb.setDatabaseName("tree_adress.db");
+    //QString table = "tab";
+    QString table = "adr_officers";
 
     if (!sdb.open()) {
         qDebug() << sdb.lastError().text();
@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     updateActions();
 }
 
+
 void MainWindow::insertChild()
 {
     const QModelIndex index = view->selectionModel()->currentIndex();
@@ -72,12 +73,12 @@ void MainWindow::insertChild()
     updateActions();
 }
 
+
 bool MainWindow::insertColumn()
 {
     QAbstractItemModel *model = view->model();
     int column = view->selectionModel()->currentIndex().column();
 
-    // Insert a column in the parent item.
     bool changed = model->insertColumn(column + 1);
     if (changed)
         model->setHeaderData(column + 1, Qt::Horizontal, QVariant("[No header]"), Qt::EditRole);
@@ -86,6 +87,7 @@ bool MainWindow::insertColumn()
 
     return changed;
 }
+
 
 void MainWindow::insertRow()
 {
@@ -103,18 +105,19 @@ void MainWindow::insertRow()
     }
 }
 
+
 bool MainWindow::removeColumn()
 {
     QAbstractItemModel *model = view->model();
     const int column = view->selectionModel()->currentIndex().column();
 
-    // Insert columns in each child of the parent item.
     const bool changed = model->removeColumn(column);
     if (changed)
         updateActions();
 
     return changed;
 }
+
 
 void MainWindow::removeRow()
 {
@@ -123,6 +126,7 @@ void MainWindow::removeRow()
     if (model->removeRow(index.row(), index.parent()))
         updateActions();
 }
+
 
 void MainWindow::updateActions()
 {

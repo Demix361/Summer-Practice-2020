@@ -4,7 +4,7 @@
 #include <QVariant>
 #include <QVector>
 
-//! [0]
+
 class TreeItem
 {
 public:
@@ -30,6 +30,5 @@ private:
     TreeItem *parentItem;
     QString table;
 };
-//! [0]
 
 #endif // TREEITEM_H

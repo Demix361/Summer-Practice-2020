@@ -1,16 +1,32 @@
 #include "mainwindow.h"
 #include "treemodel.h"
 
+#include <QtSql>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     setupUi(this);
 
-    // названия столбцов взять из бд
-    const QStringList headers({tr("id"), tr("tr_left"), tr("tr_right"), tr("data"), tr("level")});
 
-    TreeModel *model = new TreeModel(headers);
+    QSqlDatabase sdb = QSqlDatabase::addDatabase("QSQLITE");
+    sdb.setDatabaseName("testdb.db");
+    //sdb.setDatabaseName("tree_adress.db");
+    QString table = "tab";
+    //QString table = "adr_officers";
+
+    if (!sdb.open()) {
+        qDebug() << sdb.lastError().text();
+    }
+
+    int cols = sdb.driver()->record(table).count();
+    QVector<QString> header_names;
+    header_names.reserve(cols);
+    for (int i = 0; i < cols; i++){
+        header_names << sdb.driver()->record(table).field(i).name();
+    }
+
+    TreeModel *model = new TreeModel(header_names);
 
     view->setModel(model);
     for (int column = 0; column < model->columnCount(); ++column)
@@ -124,8 +140,8 @@ void MainWindow::updateActions()
         const int row = view->selectionModel()->currentIndex().row();
         const int column = view->selectionModel()->currentIndex().column();
         if (view->selectionModel()->currentIndex().parent().isValid())
-            statusBar()->showMessage(tr("Position: (%1,%2)").arg(row).arg(column));
+            statusBar()->showMessage(tr("Позиция: (%1,%2)").arg(row).arg(column));
         else
-            statusBar()->showMessage(tr("Position: (%1,%2) in top level").arg(row).arg(column));
+            statusBar()->showMessage(tr("Позиция: (%1,%2)").arg(row).arg(column));
     }
 }

@@ -13,7 +13,7 @@ class TreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    TreeModel(const QStringList &headers,
+    TreeModel(const QVector<QString> &headers,
               QObject *parent = nullptr);
     ~TreeModel();
 
@@ -48,6 +48,7 @@ private:
     TreeItem *getItem(const QModelIndex &index) const;
 
     TreeItem *rootItem;
+    QString table;
 };
 
 

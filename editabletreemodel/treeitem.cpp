@@ -6,7 +6,10 @@
 TreeItem::TreeItem(const QVector<QVariant> &data, TreeItem *parent)
     : itemData(data),
       parentItem(parent)
-{}
+{
+    //table = "adr_officers";
+    table = "tab";
+}
 
 
 
@@ -23,13 +26,12 @@ void TreeItem::f(TreeItem *parent)
 {
     int cnt = parent->childCount();
 
-    //qDebug() << parent->data(3).toString();
     if (parent->data(0).toString() != "id")
     {
         QSqlQuery query;
         int id = parent->data(0).toInt();
 
-        QString sql_str = "select * from tab where id = " + QString::number(id);
+        QString sql_str = "select * from " + table + " where id = " + QString::number(id);
         if (!query.exec(sql_str))
             qDebug() << "aaaaaaaaaaaaaa";
         else
@@ -38,14 +40,12 @@ void TreeItem::f(TreeItem *parent)
 
             int left = query.value(1).toInt();
             int right = query.value(2).toInt();
-            int level = query.value(4).toInt();
-
-            qDebug() << id << left << right << parent->data(3) << level;
+            int level = query.value(3).toInt();
 
             parent->setData(0, id);
             parent->setData(1, left);
             parent->setData(2, right);
-            parent->setData(4, level);
+            parent->setData(3, level);
         }
 
     }
@@ -176,6 +176,29 @@ bool TreeItem::setData(int column, const QVariant &value)
         return false;
 
     itemData[column] = value;
+
+    /*
+    QSqlQuery query;
+
+    int id = parent()->child(this->childNumber())->data(0).toInt();
+    QString sql_str = "select * from " + table + " where id = " + QString::number(id);
+    if (!query.exec(sql_str))
+        qDebug() << "1 setdata gg";
+
+    query.next();
+    qDebug() << query.isNull(0);
+    qDebug() << query.size() << "\n";
+    */
+
+    /*
+    if (query.value(column).toString() != parent()->child(this->childNumber())->data(column).toString())
+    {
+        qDebug() << "tree:" << parent()->child(this->childNumber())->data(column).toString();
+        qDebug() << "db:" << query.value(column).toString();
+        qDebug() << "column:" << column;
+    }
+    */
+
     return true;
 }
 //! [11]

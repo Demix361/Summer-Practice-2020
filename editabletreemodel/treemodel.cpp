@@ -6,7 +6,7 @@
 #include <QDebug>
 
 
-TreeModel::TreeModel(const QStringList &headers, QObject *parent)
+TreeModel::TreeModel(const QVector<QString> &headers, QObject *parent)
     : QAbstractItemModel(parent)
 {
     QVector<QVariant> rootData;
@@ -14,6 +14,8 @@ TreeModel::TreeModel(const QStringList &headers, QObject *parent)
         rootData << header;
 
     rootItem = new TreeItem(rootData);
+    //table = "adr_officers";
+    table = "tab";
     setupModelData(rootItem);
 }
 
@@ -107,15 +109,15 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
     if (!parentItem)
         return false;
 
-    QSqlQuery query("select max(id) from tab");
+    QSqlQuery query("select max(id) from " + table);
     query.next();
     int new_id = query.value(0).toInt() + 1;
 
     int new_level;
-    if (parentItem->data(4).toString() == "level")
+    if (parentItem->data(3).toString() == "level")
         new_level = 0;
     else
-        new_level = parentItem->data(4).toInt() + 1;
+        new_level = parentItem->data(3).toInt() + 1;
 
     int new_left;
     int new_right;
@@ -133,49 +135,30 @@ bool TreeModel::insertRows(int position, int rows, const QModelIndex &parent)
     const bool success = parentItem->insertChildren(position, rows, rootItem->columnCount());
     endInsertRows();
 
-    qDebug() << parentItem->child(position)->data(0);
-    qDebug() << parentItem->child(position)->data(1);
-    qDebug() << parentItem->child(position)->data(2);
-    qDebug() << parentItem->child(position)->data(4);
 
     parentItem->child(position)->setData(0, QString::number(new_id));
     parentItem->child(position)->setData(1, QString::number(new_left));
     parentItem->child(position)->setData(2, QString::number(new_right));
-    parentItem->child(position)->setData(4, QString::number(new_level));
-
-    qDebug() << parentItem->child(position)->data(0);
-    qDebug() << parentItem->child(position)->data(1);
-    qDebug() << parentItem->child(position)->data(2);
-    qDebug() << parentItem->child(position)->data(4) << "\n";
-
-    qDebug() << parentItem->child(0)->data(0);
-    qDebug() << parentItem->child(0)->data(1);
-    qDebug() << parentItem->child(0)->data(2);
-    qDebug() << parentItem->child(0)->data(4) << "\n";
+    parentItem->child(position)->setData(3, QString::number(new_level));
 
 
-    QString sql_str = "update tab set tr_right = tr_right + 2 where tr_right >= " + QString::number(new_left);
+    QString sql_str = "update " + table + " set tr_right = tr_right + 2 where tr_right >= " + QString::number(new_left);
     if (!query.exec(sql_str))
-        qDebug() << "2 gg";
+        qDebug() << "1 ins gg";
 
 
-    sql_str = "update tab set tr_left = tr_left + 2 where tr_left >= " + QString::number(new_left);
+    sql_str = "update " + table + " set tr_left = tr_left + 2 where tr_left >= " + QString::number(new_left);
     if (!query.exec(sql_str))
-        qDebug() << "3 gg";
+        qDebug() << "2 ins gg";
 
 
-    sql_str = "insert into tab (id, tr_left, tr_right, level, data) "
-              "values(" + QString::number(new_id) + ", " + QString::number(new_left) + ", " + QString::number(new_right) + ", " + QString::number(new_level) +  ", '[No data]')";
+    sql_str = "insert into " + table + " (id, tr_left, tr_right, level) "
+              "values(" + QString::number(new_id) + ", " + QString::number(new_left) + ", " + QString::number(new_right) + ", " + QString::number(new_level) +  ")";
     if (!query.exec(sql_str))
-        qDebug() << "4 gg";
+        qDebug() << "3 ins gg";
 
 
     rootItem->f(rootItem);
-
-
-
-
-
 
     return success;
 }
@@ -221,15 +204,15 @@ bool TreeModel::removeRows(int position, int rows, const QModelIndex &parent)
     int width = rgt - lft + 1;
     QSqlQuery query;
 
-    QString sql_str = "delete from tab where tr_left between " + QString::number(lft) + " and " + QString::number(rgt);
+    QString sql_str = "delete from " + table + " where tr_left between " + QString::number(lft) + " and " + QString::number(rgt);
     if (!query.exec(sql_str))
         qDebug() << "1 del gg";
 
-    sql_str = "update tab set tr_right = tr_right - " + QString::number(width) + " where tr_right > " + QString::number(rgt);
+    sql_str = "update " + table + " set tr_right = tr_right - " + QString::number(width) + " where tr_right > " + QString::number(rgt);
     if (!query.exec(sql_str))
         qDebug() << "2 del gg";
 
-    sql_str = "update tab set tr_left = tr_left - " + QString::number(width) + " where tr_left > " + QString::number(rgt);
+    sql_str = "update " + table + " set tr_left = tr_left - " + QString::number(width) + " where tr_left > " + QString::number(rgt);
     if (!query.exec(sql_str))
         qDebug() << "3 del gg";
 
@@ -264,6 +247,24 @@ bool TreeModel::setData(const QModelIndex &index, const QVariant &value, int rol
     if (result)
         emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
 
+
+    QSqlQuery query;
+
+    int id = item->data(0).toInt();
+    QString sql_str = "select * from " + table + " where id = " + QString::number(id);
+    if (!query.exec(sql_str))
+        qDebug() << "1 setdata gg";
+
+    query.next();
+
+    int column = index.column();
+    if (query.value(column).toString() != item->data(column).toString())
+    {
+        sql_str = "update " + table + " set " + rootItem->data(column).toString() + " = '" + item->data(column).toString() + "' where id = " + QString::number(id);
+        if (!query.exec(sql_str))
+            qDebug() << "2 setdata gg" << query.lastError();
+    }
+
     return result;
 }
 
@@ -283,6 +284,7 @@ bool TreeModel::setHeaderData(int section, Qt::Orientation orientation,
 }
 
 
+//ok
 void TreeModel::setupModelData(TreeItem *parent)
 {
     QVector<TreeItem*> parents;
@@ -290,32 +292,21 @@ void TreeModel::setupModelData(TreeItem *parent)
     parents << parent;
     indentations << 0;
 
-    /*
-    QSqlQuery query("select * from tab as node, tab as parent where node.tr_left "
-                    "between parent.tr_left and parent.tr_right and "
-                    "parent.level = 0 order by node.tr_left");
-                    */
-    QSqlQuery query("select * from tab order by tr_left");
-    //qDebug() << query.size();
-
+    QSqlQuery query("select * from " + table + " order by tr_left");
     int cols = query.record().count();
+    qDebug() << cols;
 
     while (query.next()) {
-        int position = query.value(4).toInt();
+        int position = query.value(3).toInt();
 
         QVector<QVariant> columnData;
         columnData.reserve(cols);
         for (int i = 0; i < cols; i++){
             columnData << query.value(i).toString();
-            //qDebug() << query.value(i).toString();
         }
-        //qDebug() << "\n";
 
 
         if (position > indentations.last()) {
-            // The last child of the current parent is now the new parent
-            // unless the current parent has no children.
-
             if (parents.last()->childCount() > 0) {
                 parents << parents.last()->child(parents.last()->childCount()-1);
                 indentations << position;
@@ -327,11 +318,9 @@ void TreeModel::setupModelData(TreeItem *parent)
             }
         }
 
-        // Append a new item to the current parent's list of children.
         TreeItem *parent = parents.last();
         parent->insertChildren(parent->childCount(), 1, rootItem->columnCount());
         for (int column = 0; column < columnData.size(); ++column)
             parent->child(parent->childCount() - 1)->setData(column, columnData[column]);
-
     };
 }

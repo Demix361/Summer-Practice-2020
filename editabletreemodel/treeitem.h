@@ -28,6 +28,7 @@ private:
     QVector<TreeItem*> childItems;
     QVector<QVariant> itemData;
     TreeItem *parentItem;
+    QString table;
 };
 //! [0]
 
